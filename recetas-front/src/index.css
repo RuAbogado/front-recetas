@@ -127,7 +127,7 @@ img {
   text-decoration: underline;
 }
 
-/* NUEVOS ESTILOS PARA FORMULARIOS */
+
 form {
   display: flex;
   flex-direction: column;

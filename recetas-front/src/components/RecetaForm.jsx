@@ -20,19 +20,24 @@ export default function RecetaForm({ modo, receta = {} }) {
     try {
       const imageUrls = [];
 
-      for (const img of imagenes) {
-        const fileName = `${Date.now()}-${img.name}`;
-        const uploadUrl = `https://recetas-imagenes.s3.amazonaws.com/${fileName}`;
+      if (imagenes.length === 0 && modo === "editar") {
+        // No se seleccionaron nuevas imágenes, se conservan las actuales
+        imageUrls.push(...receta.imagenes);
+      } else {
+        for (const img of imagenes) {
+          const fileName = `${Date.now()}-${img.name}`;
+          const uploadUrl = `https://recetas-imagenes.s3.amazonaws.com/${fileName}`;
 
-        await fetch(uploadUrl, {
-          method: "PUT",
-          body: img,
-          headers: {
-            "Content-Type": img.type,
-          },
-        });
+          await fetch(uploadUrl, {
+            method: "PUT",
+            body: img,
+            headers: {
+              "Content-Type": img.type,
+            },
+          });
 
-        imageUrls.push(`https://recetas-imagenes.s3.amazonaws.com/${fileName}`);
+          imageUrls.push(`https://recetas-imagenes.s3.amazonaws.com/${fileName}`);
+        }
       }
 
       const payload = {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../config"; // Ya no necesitamos IMAGE_URL
 
 export default function DetalleReceta() {
   const { id } = useParams();
@@ -8,15 +9,19 @@ export default function DetalleReceta() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`http://localhost:3000/api/recetas/${id}`)
+    axios.get(`${API_URL}/${id}`)
       .then(res => setReceta(res.data))
       .catch(err => console.error(err));
   }, [id]);
 
   const eliminar = async () => {
     if (confirm("¿Eliminar esta receta?")) {
-      await axios.delete(`http://localhost:3000/api/recetas/${id}`);
-      navigate("/");
+      try {
+        await axios.delete(`${API_URL}/${id}`);
+        navigate("/");
+      } catch (err) {
+        console.error("Error al eliminar", err);
+      }
     }
   };
 
@@ -24,11 +29,7 @@ export default function DetalleReceta() {
 
   return (
     <div className="container">
-      <img
-        className="recipe-img"
-        src={`http://localhost:3000/${receta.imagenes[0]}`}
-        alt={receta.titulo}
-      />
+      <img className="recipe-img" src={receta.imagenes[0]} alt={receta.titulo} />
       <h1 className="recipe-title">{receta.titulo}</h1>
       <p className="recipe-author">Por: {receta.autor}</p>
 

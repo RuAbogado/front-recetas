@@ -4,7 +4,7 @@ export default function RecetaCard({ receta }) {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition">
       <img
-        src={`http://localhost:3000/${receta.imagenes[0]}`}
+        src={receta.imagenes[0]} // Ya contiene la URL completa de S3
         alt={receta.titulo}
         className="w-full h-48 object-cover"
       />

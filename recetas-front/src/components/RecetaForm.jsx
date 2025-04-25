@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from 'sweetalert2';
+import { API_URL } from "../config";
 
 export default function RecetaForm({ modo, receta = {} }) {
   const navigate = useNavigate();
@@ -15,41 +16,49 @@ export default function RecetaForm({ modo, receta = {} }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("titulo", titulo);
-    formData.append("autor", autor);
-    formData.append("ingredientes", ingredientes);
-    formData.append("pasos", pasos);
-    imagenes.forEach(img => formData.append("imagenes", img));
 
     try {
+      const imageUrls = [];
+
+      for (const img of imagenes) {
+        const fileName = `${Date.now()}-${img.name}`;
+        const uploadUrl = `https://recetas-imagenes.s3.amazonaws.com/${fileName}`;
+
+        await fetch(uploadUrl, {
+          method: "PUT",
+          body: img,
+          headers: {
+            "Content-Type": img.type,
+          },
+        });
+
+        imageUrls.push(`https://recetas-imagenes.s3.amazonaws.com/${fileName}`);
+      }
+
+      const payload = {
+        titulo,
+        autor,
+        ingredientes,
+        pasos,
+        imagenes: imageUrls,
+      };
+
       if (modo === "crear") {
-        await axios.post("http://localhost:3000/api/recetas", formData);
-        Swal.fire({
-          icon: 'success',
-          title: '¡Receta creada!',
-          text: 'Tu receta se ha guardado exitosamente.',
-          confirmButtonColor: '#d92372'
-        });
+        await axios.post(API_URL, payload);
+        Swal.fire({ icon: "success", title: "¡Receta creada!", confirmButtonColor: "#d92372" });
       } else {
-        await axios.put(`http://localhost:3000/api/recetas/${id}`, formData);
-        Swal.fire({
-          icon: 'success',
-          title: '¡Receta actualizada!',
-          text: 'Los cambios se guardaron correctamente.',
-          confirmButtonColor: '#d92372'
-        });
+        await axios.put(`${API_URL}/${id}`, payload);
+        Swal.fire({ icon: "success", title: "¡Receta actualizada!", confirmButtonColor: "#d92372" });
       }
 
       setTimeout(() => navigate("/"), 1500);
-
     } catch (error) {
       console.error("Error al guardar receta", error);
       Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Hubo un problema al guardar la receta.',
-        confirmButtonColor: '#e63946'
+        icon: "error",
+        title: "Oops...",
+        text: "Hubo un problema al guardar la receta.",
+        confirmButtonColor: "#e63946",
       });
     }
   };
